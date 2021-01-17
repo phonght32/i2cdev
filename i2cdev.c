@@ -139,3 +139,12 @@ esp_err_t i2cdev_get_addr(i2cdev_handle_t handle, uint8_t *dev_addr)
 
 	return ESP_OK;
 }
+
+esp_err_t i2cdev_destroy(i2cdev_handle_t handle)
+{
+	I2CDEV_CHECK(handle, "error handle null", return ESP_ERR_INVALID_ARG);
+	mutex_destroy(handle->lock);
+	free(handle);
+
+	return ESP_OK;
+}

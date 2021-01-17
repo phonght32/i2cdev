@@ -23,6 +23,7 @@ esp_err_t i2cdev_read(i2cdev_handle_t handle, uint8_t reg_addr, uint8_t *buf_rec
 esp_err_t i2cdev_write(i2cdev_handle_t handle, uint8_t reg_addr, uint8_t *buf_send, size_t size);
 esp_err_t i2cdev_set_addr(i2cdev_handle_t handle, uint8_t dev_addr);
 esp_err_t i2cdev_get_addr(i2cdev_handle_t handle, uint8_t *dev_addr);
+esp_err_t i2cdev_destroy(i2cdev_handle_t handle);
 
 #ifdef __cplusplus
 }

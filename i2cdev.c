@@ -1,9 +1,7 @@
-#include "esp_log.h"
-#include "string.h"
+#include <string.h>
 
+#include "esp_log.h"
 #include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/queue.h"
 
 #include "i2cdev.h"
 
@@ -49,7 +47,11 @@ i2cdev_handle_t i2cdev_init(i2cdev_cfg_t *config)
 		.sda_pullup_en = GPIO_PULLUP_ENABLE,
 		.master.clk_speed = config->clk_speed,
 	};
-	ESP_LOGD(TAG, "port: %d, sda: %d, scl: %d, speed: %d", config->port, config->sda_io_num, config->scl_io_num, config->clk_speed);
+	ESP_LOGI(TAG, "port: %d, sda: %d, scl: %d, speed: %d",
+	         (unsigned int)config->port,
+	         (unsigned int)config->sda_io_num,
+	         (unsigned int)config->scl_io_num,
+	         (unsigned int)config->clk_speed);
 
 	int ret;
 

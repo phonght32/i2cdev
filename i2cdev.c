@@ -1,11 +1,38 @@
-#include <string.h>
+/**
+ * @file i2cdev.c
+ *
+ * ESP-IDF's component manages I2C ports, which makes it effective for working
+ * with RTOS.
+ *
+ * MIT License
+ *
+ * Copyright (c) 2023 phonght32
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
+#include <string.h>
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
-
 #include "i2cdev.h"
 
-#define I2C_TIMEOUT                 3000
+#define I2C_TIMEOUT                 3000						/*!< I2C time out in milisecond */
 #define ACK_VAL                     0x0                         /*!< I2C ack value */
 #define NACK_VAL                    0x1                         /*!< I2C nack value */
 #define ACK_CHECK_EN                0x1                         /*!< I2C master will check ack from slave*/
@@ -13,18 +40,35 @@
 #define I2C_MASTER_TX_BUF_DISABLE   0                           /*!< I2C master doesn't need buffer */
 #define I2C_MASTER_RX_BUF_DISABLE   0                           /*!< I2C master doesn't need buffer */
 
+/**
+ * @macro 	Mutex macros.
+ */
 #define mutex_lock(x)					while (xSemaphoreTake(x, portMAX_DELAY) != pdPASS)
 #define mutex_unlock(x) 				xSemaphoreGive(x)
 #define mutex_create()					xSemaphoreCreateMutex()
 #define mutex_destroy(x) 				vQueueDelete(x)
 
+/**
+ * @macro 	I2C device check.
+ */
 #define I2CDEV_CHECK(a, str, action) if(!(a)) {								\
 	ESP_LOGE(TAG, "%s:%d (%s):%s", __FILE__, __LINE__, __FUNCTION__, str);	\
 	action;																	\
 }
 
+/**
+ * @brief   Module tag that is displayed in ESP_LOG.
+ */
 static const char *TAG = "I2CDEV";
 
+/**
+ * @struct 	I2C device structure.
+ *
+ * @param   port I2C hardware port.
+ * @param   dev_addr Target address.
+ * @param   lock Mutex.
+ * @param   is_run Running status.
+ */
 typedef struct i2cdev {
 	i2c_port_t 				port;
 	uint8_t 				dev_addr;
@@ -32,6 +76,9 @@ typedef struct i2cdev {
 	bool 					is_run;
 } i2cdev_t;
 
+/**
+ * @func    i2cdev_init
+ */
 i2cdev_handle_t i2cdev_init(i2cdev_cfg_t *config)
 {
 	I2CDEV_CHECK(config, "error config null", return NULL);
@@ -68,6 +115,9 @@ i2cdev_handle_t i2cdev_init(i2cdev_cfg_t *config)
 	return handle;
 }
 
+/**
+ * @func    i2cdev_read
+ */
 esp_err_t i2cdev_read(i2cdev_handle_t handle, uint8_t reg_addr, uint8_t *buf_recv, size_t size)
 {
 	I2CDEV_CHECK(handle, "error handle null", return ESP_ERR_INVALID_ARG);
@@ -98,6 +148,9 @@ esp_err_t i2cdev_read(i2cdev_handle_t handle, uint8_t reg_addr, uint8_t *buf_rec
 	return ESP_OK;
 }
 
+/**
+ * @func    i2cdev_write
+ */
 esp_err_t i2cdev_write(i2cdev_handle_t handle, uint8_t reg_addr, uint8_t *buf_send, size_t size)
 {
 	I2CDEV_CHECK(handle, "error handle null", return ESP_ERR_INVALID_ARG);
@@ -119,6 +172,9 @@ esp_err_t i2cdev_write(i2cdev_handle_t handle, uint8_t reg_addr, uint8_t *buf_se
 	return ret;
 }
 
+/**
+ * @func    i2cdev_set_addr
+ */
 esp_err_t i2cdev_set_addr(i2cdev_handle_t handle, uint8_t dev_addr)
 {
 	I2CDEV_CHECK(handle, "error handle null", return ESP_ERR_INVALID_ARG);
@@ -130,6 +186,9 @@ esp_err_t i2cdev_set_addr(i2cdev_handle_t handle, uint8_t dev_addr)
 	return ESP_OK;
 }
 
+/**
+ * @func    i2cdev_get_addr
+ */
 esp_err_t i2cdev_get_addr(i2cdev_handle_t handle, uint8_t *dev_addr)
 {
 	I2CDEV_CHECK(handle, "error handle null", return ESP_ERR_INVALID_ARG);
@@ -142,6 +201,9 @@ esp_err_t i2cdev_get_addr(i2cdev_handle_t handle, uint8_t *dev_addr)
 	return ESP_OK;
 }
 
+/**
+ * @func    i2cdev_destroy
+ */
 esp_err_t i2cdev_destroy(i2cdev_handle_t handle)
 {
 	I2CDEV_CHECK(handle, "error handle null", return ESP_ERR_INVALID_ARG);
